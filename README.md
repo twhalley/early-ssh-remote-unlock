@@ -1,6 +1,6 @@
 # Early SSH Remote Unlock
 
-A comprehensive setup script for configuring early SSH remote unlock on encrypted Linux systems using dropbear-initramfs. This allows you to remotely unlock LUKS-encrypted drives during system boot via SSH.
+A comprehensive setup script for configuring early SSH remote unlock on encrypted Linux systems using dropbear-initramfs. This allows you to remotely unlock LUKS-encrypted drives during system boot via SSH. All credit goes to https://www.cyberciti.biz/security/how-to-unlock-luks-using-dropbear-ssh-keys-remotely-in-linux/ I've just created a script around this piece of work.
 
 ## Overview
 
@@ -21,7 +21,8 @@ This script automates the configuration of:
 
 1. **Clone or download** the script:
    ```bash
-   wget https://your-repo/install.sh
+   git clone https://github.com/twhalley/early-ssh-remote-unlock.git
+   cd early-ssh-remote-unlock
    chmod +x install.sh
    ```
 
