@@ -4,12 +4,67 @@
 
 # Parse command line arguments
 CUSTOM_PUBLIC_KEY=""
-if [ $# -gt 0 ]; then
+STATIC_IP="172.16.246.100"
+GATEWAY="172.16.246.254"
+NETMASK="255.255.255.0"
+HOSTNAME="dropbear-server"
+
+# Function to show usage
+show_usage() {
+    echo "Usage: $0 [public_key] [ip_address] [gateway] [netmask] [hostname]"
+    echo ""
+    echo "Arguments (all optional):"
+    echo "  public_key   : SSH public key content (if empty, will generate/use existing)"
+    echo "  ip_address   : Static IP address (default: 172.16.246.100)"
+    echo "  gateway      : Network gateway (default: 172.16.246.254)"
+    echo "  netmask      : Subnet mask (default: 255.255.255.0)"
+    echo "  hostname     : System hostname (default: dropbear-server)"
+    echo ""
+    echo "Examples:"
+    echo "  sudo $0"
+    echo "  sudo $0 \"ssh-rsa AAAAB3...\""
+    echo "  sudo $0 \"\" 192.168.1.100 192.168.1.1 255.255.255.0 my-server"
+    echo "  sudo $0 \"ssh-rsa AAAAB3...\" 10.0.0.50 10.0.0.1 255.255.255.0 unlock-server"
+}
+
+# Parse arguments
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_usage
+    exit 0
+fi
+
+if [ $# -gt 0 ] && [ -n "$1" ]; then
     CUSTOM_PUBLIC_KEY="$1"
     echo "🔑 Custom public key provided as argument"
 else
     echo "🔑 No public key argument provided, will generate/use existing key"
 fi
+
+if [ $# -gt 1 ] && [ -n "$2" ]; then
+    STATIC_IP="$2"
+    echo "🌐 Custom IP address: $STATIC_IP"
+fi
+
+if [ $# -gt 2 ] && [ -n "$3" ]; then
+    GATEWAY="$3"
+    echo "🌐 Custom gateway: $GATEWAY"
+fi
+
+if [ $# -gt 3 ] && [ -n "$4" ]; then
+    NETMASK="$4"
+    echo "🌐 Custom netmask: $NETMASK"
+fi
+
+if [ $# -gt 4 ] && [ -n "$5" ]; then
+    HOSTNAME="$5"
+    echo "🌐 Custom hostname: $HOSTNAME"
+fi
+
+echo "📋 Network Configuration:"
+echo "   IP: $STATIC_IP"
+echo "   Gateway: $GATEWAY"
+echo "   Netmask: $NETMASK"
+echo "   Hostname: $HOSTNAME"
 
 echo ""
 echo "=== ROOT PRIVILEGE CHECK ==="
@@ -26,8 +81,8 @@ else
     echo "EUID: $EUID"
     echo ""
     echo "To run as root, use one of the following:"
-    echo "  sudo $0 [public_key_content]"
-    echo "  su -c '$0 [public_key_content]'"
+    echo "  sudo $0 [public_key] [ip] [gateway] [netmask] [hostname]"
+    echo "  su -c '$0 [public_key] [ip] [gateway] [netmask] [hostname]'"
 fi
 
 echo ""
@@ -183,7 +238,7 @@ if dpkg -s dropbear-initramfs >/dev/null 2>&1; then
         
         # Configure static IP in initramfs.conf
         INITRAMFS_CONF="/etc/initramfs-tools/initramfs.conf"
-        IP_CONFIG="IP=172.16.246.100::172.16.246.254:255.255.255.0:dropbear-server"
+        IP_CONFIG="IP=$STATIC_IP::$GATEWAY:$NETMASK:$HOSTNAME"
         
         if [ -f "$INITRAMFS_CONF" ]; then
             echo "✅ $INITRAMFS_CONF exists"
